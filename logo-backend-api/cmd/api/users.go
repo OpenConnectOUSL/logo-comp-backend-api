@@ -44,7 +44,21 @@ func (app *application) createUserHandler(w http.ResponseWriter, r *http.Request
 		app.faildValidationResponse(w, r, v.Errors)
 		return
 	}
-	fmt.Fprintf(w, "%+v\n", input)
+
+	err = app.models.Users.Insert(user)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	headers := make(http.Header)
+	headers.Set("Location", fmt.Sprintf("/v1/users/%d", user.ID))
+
+	err = app.writeJSON(w, http.StatusCreated, envelope{"user": user}, headers)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
+	
 }
 
 func (app *application) showUserHandler(w http.ResponseWriter, r *http.Request) {

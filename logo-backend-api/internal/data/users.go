@@ -1,8 +1,10 @@
 package data
 
 import (
-	"time"
+	"database/sql"
 	"regexp"
+	"time"
+
 	"oc.api.org/internal/validator"
 )
 
@@ -38,4 +40,22 @@ func ValidateUser(v *validator.Validator, user *User) {
 
 func Matches(value string, rx *regexp.Regexp) bool {
     return rx.MatchString(value)
+}
+
+type UserModel struct {
+	DB *sql.DB
+}
+
+func (u UserModel) Insert(user *User) error {
+	query := `INSERT INTO users (firstname, lastname, registrationnumber, studyprogram, faculty, academicyear, email)
+	VALUES ($1, $2, $3, $4, $5, $6, $7)
+	RETURNING id, created_at`
+
+	args := []interface{}{user.FirstName, user.LastName, user.RegistrationNumber, user.StudyProgram, user.Faculty, user.AcademicYear, user.Email}
+
+	return u.DB.QueryRow(query, args...).Scan(&user.ID, &user.CreatedAt)
+}
+
+func (u UserModel) Get(id int64) (*User, error) {
+	return nil, nil
 }
