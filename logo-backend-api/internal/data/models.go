@@ -18,8 +18,3 @@ func NewModels(db *sql.DB) Models {
 		Users: UserModel{DB: db},
 	}
 }
-
-
-
-
-

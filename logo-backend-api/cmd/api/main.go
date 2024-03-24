@@ -19,12 +19,12 @@ const version = "1.0.0"
 // config struct to hold all the configuration settings
 type config struct {
 	port int
-	env string
-	db struct {
-		dsn string
+	env  string
+	db   struct {
+		dsn          string
 		maxOpenConns int
 		maxIdleConns int
-		maxIdleTime string
+		maxIdleTime  string
 	}
 }
 
@@ -34,6 +34,7 @@ type application struct {
 	logger *log.Logger
 	models data.Models
 }
+
 func main() {
 	fmt.Println("Hello world!")
 
@@ -42,19 +43,25 @@ func main() {
 	flag.IntVar(&cfg.port, "port", 4000, "API server port")
 	flag.StringVar(&cfg.env, "env", "development", "Environment (development|staging|production)")
 	flag.StringVar(&cfg.db.dsn, "db-dsn", os.Getenv("LOGOCOMP"), "PostgreSQL DSN")
-	
+
 	flag.IntVar(&cfg.db.maxOpenConns, "db-max-open-conns", 25, "PostgreSQL max open connections")
 	flag.IntVar(&cfg.db.maxIdleConns, "db-max-idle-conns", 25, "PostgreSQL max idle connections")
 	flag.StringVar(&cfg.db.maxIdleTime, "db-max-idle-time", "15m", "PostgresSQL max connection idle time")
+	displayVersion := flag.Bool("version", false, "Display version and exit")
 
 	flag.Parse()
 
-	logger := log.New(os.Stdout, "", log.Ldate | log.Ltime)
+	logger := log.New(os.Stdout, "", log.Ldate|log.Ltime)
 
 	db, err := openDB(cfg)
 
 	if err != nil {
 		logger.Fatal(err)
+	}
+
+	if *displayVersion {
+		fmt.Printf("Version:\t%s\n", version)
+		os.Exit(0)
 	}
 
 	defer db.Close()
@@ -68,10 +75,10 @@ func main() {
 	}
 
 	srv := &http.Server{
-		Addr: fmt.Sprintf(":%d", cfg.port),
-		Handler: app.routes(),
-		IdleTimeout: time.Minute,
-		ReadTimeout: 10 * time.Second,
+		Addr:         fmt.Sprintf(":%d", cfg.port),
+		Handler:      app.routes(),
+		IdleTimeout:  time.Minute,
+		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 30 * time.Second,
 	}
 
@@ -84,7 +91,7 @@ func main() {
 
 func openDB(cfg config) (*sql.DB, error) {
 	db, err := sql.Open("postgres", cfg.db.dsn)
-	
+
 	if err != nil {
 		return nil, err
 	}
@@ -92,7 +99,7 @@ func openDB(cfg config) (*sql.DB, error) {
 	db.SetMaxOpenConns(cfg.db.maxOpenConns)
 
 	db.SetMaxIdleConns(cfg.db.maxIdleConns)
-	
+
 	duration, err := time.ParseDuration(cfg.db.maxIdleTime)
 
 	if err != nil {

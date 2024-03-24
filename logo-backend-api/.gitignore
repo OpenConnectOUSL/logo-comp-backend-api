@@ -54,4 +54,6 @@ __pycache__/
 *.swp
 *.swo
 *.swn
-*.bak
+*.bak.envrc
+.envrc
+bin/
