@@ -1,10 +1,9 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
-	"time"
-
 	"oc.api.org/internal/data"
 	"oc.api.org/internal/validator"
 )
@@ -51,7 +50,7 @@ func (app *application) createUserHandler(w http.ResponseWriter, r *http.Request
 	}
 
 	headers := make(http.Header)
-	headers.Set("Location", fmt.Sprintf("/v1/users/%d", user.ID))
+	headers.Set("Location", fmt.Sprint("/v1/users/", user.ID))
 
 	err = app.writeJSON(w, http.StatusCreated, envelope{"user": user}, headers)
 	if err != nil {
@@ -61,22 +60,15 @@ func (app *application) createUserHandler(w http.ResponseWriter, r *http.Request
 }
 
 func (app *application) showUserHandler(w http.ResponseWriter, r *http.Request) {
-	id, err := app.readIDParam(r)
+	
+	user, err := app.models.Users.Get()
 	if err != nil {
-		app.notFoundResponse(w, r)
-		return
-	}
-
-	user := data.User{
-		ID:                 id,
-		CreatedAt:          time.Now(),
-		FirstName:          "Mayura",
-		LastName:           "Andrew",
-		RegistrationNumber: 831133,
-		StudyProgram:       "Bachelor Of Software Engineering",
-		Faculty:            "Faculty of Engineering Technology",
-		Email:              "mayura@gmail.com",
-		AcademicYear:       2023,
+		switch {
+		case errors.Is(err, data.ErrRecordNotFound):
+			app.notFoundResponse(w, r)
+		default:
+			app.serverErrorResponse(w, r, err)
+		}
 	}
 
 	err = app.writeJSON(w, http.StatusOK, envelope{"user": user}, nil)

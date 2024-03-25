@@ -2,6 +2,7 @@ package data
 
 import (
 	"database/sql"
+	"errors"
 	"regexp"
 	"time"
 
@@ -56,6 +57,54 @@ func (u UserModel) Insert(user *User) error {
 	return u.DB.QueryRow(query, args...).Scan(&user.ID, &user.CreatedAt)
 }
 
-func (u UserModel) Get(id int64) (*User, error) {
+func (u UserModel) Get() ([]*User, error) {
+
+	// if id < 1 {
+	// 	return nil, nil
+	// }
+
+	query := `SELECT * FROM users WHERE id > 0`
+
+	rows, err := u.DB.Query(query)
+	
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	var users []*User
+	for rows.Next(){
+		var user User
+		err := rows.Scan(
+			&user.ID,
+			&user.CreatedAt,
+			&user.FirstName,
+			&user.LastName,
+			&user.RegistrationNumber,
+			&user.StudyProgram,
+			&user.Faculty,
+			&user.AcademicYear,
+			&user.Email,
+		)
+		users = append(users, &user)
+
+		if err = rows.Err(); err != nil {
+			switch {
+			case errors.Is(err, sql.ErrNoRows):
+				return nil, ErrRecordNotFound
+			default:
+				return nil, err
+			}
+
+		}
+	}
+
+	if len(users) > 0 {
+		return users, nil
+	}
+
 	return nil, nil
 }
+	
+

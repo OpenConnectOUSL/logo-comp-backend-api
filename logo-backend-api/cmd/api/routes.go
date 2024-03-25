@@ -16,7 +16,7 @@ func (app *application) routes() http.Handler {
 	// Register the relevant URL methods
 	router.HandlerFunc(http.MethodGet, "/v1/healthcheck", app.healthcheckHandler)
 	router.HandlerFunc(http.MethodPost, "/v1/users", (app.createUserHandler))
-	router.HandlerFunc(http.MethodGet, "/v1/users/:id", app.showUserHandler)
+	router.HandlerFunc(http.MethodGet, "/v1/users/", app.showUserHandler)
 
 	return app.enableCORS(router)
 }
