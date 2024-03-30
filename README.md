@@ -1,5 +1,4 @@
-# Logo Design Submission Web Interface
-
+# Logo Design Submission API
 This project is a simple web interface for logo design submissions. It's built with a Go-based backend API and a Next.js frontend.
 
 ## Features
